@@ -1,4 +1,10 @@
 # therapist_chatbot.py
+import os, contextlib
+
+# Hide native gRPC/Abseil startup warnings
+with open(os.devnull, "w") as devnull, contextlib.redirect_stderr(devnull):
+    import google.generativeai as genai
+
 import os
 import sys
 import sqlite3
@@ -6,6 +12,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import List, Dict, Optional
+import time 
 
 import google.generativeai as genai
 
@@ -234,12 +241,40 @@ def to_chat_history_for_gemini(history_rows: List[Dict]) -> List[Dict]:
         hist.append({"role": role, "parts": [{"text": content}]})
     return hist
 
+# ----------------------------
+# UX helper: typewriter effect
+# ----------------------------
+
+def type_out(s: str, cps: int = 40):  
+    """
+    Print text like it's being typed in real-time.
+    cps = characters per second (0 = instant).
+    Adds small pauses around punctuation for a natural feel.
+    """
+    if not s:
+        return
+    if cps <= 0:
+        print(s, end="", flush=True)
+        return
+
+    base = 1.0 / float(cps)
+    for ch in s:
+        print(ch, end="", flush=True)
+        if ch in ".!?":
+            time.sleep(base * 8)
+        elif ch in ",;:":
+            time.sleep(base * 4)
+        elif ch == "\n":
+            time.sleep(base * 6)
+        else:
+            time.sleep(base)
+
 
 # ----------------------------
 # The main chat loop
 # ----------------------------
 
-def run_chat(session_id: str, title: Optional[str], api_key: str):
+def run_chat(session_id: str, title: Optional[str], api_key: str, cps: int = 40):  # [CHANGED] added cps
     # 1) Persistence
     store = ChatLog(DB_PATH)
     store.create_session(session_id, title=title)
@@ -261,7 +296,9 @@ def run_chat(session_id: str, title: Optional[str], api_key: str):
     # Greeting for new sessions
     if not prior:
         system_greeting = "Hello. What’s on your mind today?"
-        print(f"Bot: {system_greeting}")
+        print("Bot: ", end="", flush=True)                     # [CHANGED]
+        type_out(system_greeting, cps=cps)                     # [ADDED]
+        print()                                                # [ADDED]
         store.append(session_id, "model", system_greeting)
 
     # 4) REPL
@@ -276,13 +313,15 @@ def run_chat(session_id: str, title: Optional[str], api_key: str):
 
             # Stream response & buffer for logging
             print("Bot: ", end="", flush=True)
-            full_text = []
+            full_text: List[str] = []                          # [ADDED] (annotation only)
             stream = chat.send_message(user_msg, stream=True)
             for chunk in stream:
-                if chunk.text:
-                    full_text.append(chunk.text)
-                    print(chunk.text, end="", flush=True)
-            print()
+                part = getattr(chunk, "text", None)
+                if part:
+                    full_text.append(part)
+                    type_out(part, cps=cps)                    # [CHANGED] was print(part,...)
+
+            print()  # newline after stream finishes
 
             reply_text = "".join(full_text).strip()
             if reply_text:
@@ -305,6 +344,7 @@ def main():
     parser.add_argument("--export", "-e", metavar="SESSION_ID", help="Export a session to Markdown and exit.")
     parser.add_argument("--out", "-o", metavar="FILE", help="Output path for --export (default: session_{id}.md)")
     parser.add_argument("--api-key", help="Gemini API key (overrides env vars and files).", default=None)
+    parser.add_argument("--cps", type=int, default=40, help="Typing speed (chars/sec). 0 = instant.")  # [ADDED]
 
     args = parser.parse_args()
 
@@ -332,7 +372,11 @@ def main():
 
     # Default session id: today's date
     session_id = args.session or datetime.now().strftime("%Y-%m-%d")
-    run_chat(session_id=session_id, title=args.title, api_key=api_key)
+    run_chat(session_id=session_id, title=args.title, api_key=api_key, cps=args.cps)  # [CHANGED] pass cps
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
