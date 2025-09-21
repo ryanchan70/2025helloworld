@@ -1,11 +1,12 @@
 import streamlit as st
-import request
-import dotenv
+import requests
+from dotenv import load_dotenv
+import os
 
 # Load environment variables from .env file
-dotenv.load_dotenv()
+load_dotenv()
 
-API_KEY = dotenv.get("API_KEY")
+API_KEY = os.getenv("API_KEY")
 
 # Firebase Auth endpoints
 SIGNUP_URL = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={API_KEY}"
@@ -19,7 +20,7 @@ def register_user(email, password):
 
 def login_user(email, password):
     payload = {"email": email, "password": password, "returnSecureToken": True}
-    r = requests.post(SIGNIN_URL, data=payload)
+    r = requests.post(SIGNIN_URL, json=payload)
     return r.json()
 
 # --- Streamlit UI ---
