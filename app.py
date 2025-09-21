@@ -1,8 +1,11 @@
 import streamlit as st
-import requests
+import request
+import dotenv
 
-# Your Firebase Web API Key
-API_KEY = "YOUR_FIREBASE_WEB_API_KEY"
+# Load environment variables from .env file
+dotenv.load_dotenv()
+
+API_KEY = dotenv.get("API_KEY")
 
 # Firebase Auth endpoints
 SIGNUP_URL = f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={API_KEY}"
