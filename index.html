@@ -142,7 +142,32 @@
 							</ul>
 						</div>
 					</section>
-
+					<!-- === Keira Chat: toggle button + panel === -->
+					<button id="keira-toggle" class="keira-toggle" aria-controls="keira-panel" aria-expanded="false" title="Chat with Keira">
+					  <span class="icon solid fa-comment-dots"></span>
+					  <span class="label">Chat</span>
+					</button>
+					
+					<div id="keira-panel" class="keira-panel" hidden>
+					  <div class="keira-header">
+					    <div class="keira-title">
+					      <span class="icon solid fa-gem"></span>
+					      <strong>Keira</strong> <span class="subtle">• Therapist-style companion</span>
+					    </div>
+					    <button id="keira-close" class="keira-close" aria-label="Close">&times;</button>
+					  </div>
+					
+					  <div id="keira-messages" class="keira-messages" aria-live="polite" aria-busy="false"></div>
+					
+					  <form id="keira-form" class="keira-form" autocomplete="off">
+					    <input id="keira-input" type="text" placeholder="What’s on your mind?" required />
+					    <button id="keira-send" type="submit" class="button primary">Send</button>
+					  </form>
+					
+					  <p class="keira-hint">
+					    Keira is not a crisis service. If you’re in immediate danger, call your local emergency number.
+					  </p>
+					</div>
 			</div>
 
 		<!-- Scripts -->
@@ -152,6 +177,8 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script src="assets/js/keira.js"></script>
 
 	</body>
 </html>
+
