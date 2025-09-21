@@ -1,25 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Interface</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Keira</title>
+        <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png"/>
+        <link rel="stylesheet" href="assets/css/main.css">
+    </head>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #a6e9de, #92a4f4);
-            min-height: 100vh;
+            font-family: Rubik, sans-serif;
+            background-color: #51ccc9;
+            background-image: linear-gradient(to top, rgba(81, 204, 201, 0.8), rgba(46, 49, 65, 0.8)), url("../../images/bg.jpg");
+            background-size: auto;
+            max-height: 100vh;
         }
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 80vh;
+            min-height: 80vh;
             max-width: 600px;
-            margin: auto;
+            margin-top: 5rem;
+            margin-bottom: 5rem;
+            margin-left: auto;
+            margin-right: auto;
+            justify-content: center;
             border-radius: 1rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
             background-color: white;
@@ -76,67 +83,93 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        nav {
+			font-family: Rubik, Helvetica, sans-serif;
+			font-size: 0.8em;
+			font-weight: 700;
+			height: 3em;
+			letter-spacing: 0.1em;
+			line-height: 3em;
+			position: absolute;
+			right: 0.7em;
+			text-transform: uppercase;
+			top: 0.7em;
+		}
     </style>
-</head>
-<body class="flex items-center justify-center">
 
-    <div class="chat-container">
-        <!-- Chat Messages Display -->
-        <div id="chat-messages" class="chat-messages">
-            <!-- Messages will be appended here by JavaScript -->
-            <div class="message bot-message">Hello! I'm Keira, your mental wellness companion. How are you feeling today?</div>
+    <body class="flex items-center justify-center">
+
+        <nav id="menu">
+            <div class="inner">
+                <h2>Menu</h2>
+                <ul class="links">
+                    <li><a href="https://ryanchan70.github.io/2025helloworld/index.html">Home</a></li>
+                    <li><a href="https://ryanchan70.github.io/2025helloworld/aboutus.html">About Us</a></li>
+                    <!-- this directs the user to the web server with the backend logic -->
+                    <li><a href="https://98a65cb62d80.ngrok-free.app/chat">Keira</a></li>
+                    <li><a href="http://localhost:8501/">Log In / Register</a></li>
+                </ul>
+                <a href="#" class="close">Close</a>
+            </div>
+        </nav>
+
+        <div class="chat-container">
+            <!-- Chat Messages Display -->
+            <div id="chat-messages" class="chat-messages">
+                <!-- Messages will be appended here by JavaScript -->
+                <div class="message bot-message">Hello! I'm Keira, your mental wellness companion. How are you feeling today?</div>
+            </div>
+            
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <input id="user-input" type="text" placeholder="Type your message...">
+                <button id="send-button">Send</button>
+            </div>
         </div>
-        
-        <!-- Chat Input Area -->
-        <div class="chat-input-area">
-            <input id="user-input" type="text" placeholder="Type your message...">
-            <button id="send-button">Send</button>
-        </div>
-    </div>
 
-        <script>
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const sendButton = document.getElementById('send-button');
+            <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
 
-    function addMessage(text, sender) {
-        const el = document.createElement('div');
-        el.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-        el.textContent = text;
-        chatMessages.appendChild(el);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    async function handleUserMessage() {
-        const text = userInput.value.trim();
-        if (!text) return;
-        addMessage(text, 'user');
-        userInput.value = '';
-        sendButton.disabled = true;
-
-        try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-            session_id: (localStorage.keiraSessionId ||= (crypto.randomUUID?.() || String(Date.now()))),
-            message: text
-            })
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status} – ${await res.text()}`);
-        const data = await res.json();
-        addMessage(data.reply || '(empty reply)', 'bot');
-        } catch (err) {
-        console.error(err);
-        addMessage(`Server error: ${err.message || 'load failed'}`, 'bot');
-        } finally {
-        sendButton.disabled = false;
-        userInput.focus();
+        function addMessage(text, sender) {
+            const el = document.createElement('div');
+            el.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+            el.textContent = text;
+            chatMessages.appendChild(el);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    }
 
-    sendButton.addEventListener('click', handleUserMessage);
-    userInput.addEventListener('keypress', e => e.key === 'Enter' && handleUserMessage());
-    </script>
-</body>
+        async function handleUserMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+            addMessage(text, 'user');
+            userInput.value = '';
+            sendButton.disabled = true;
+
+            try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                session_id: (localStorage.keiraSessionId ||= (crypto.randomUUID?.() || String(Date.now()))),
+                message: text
+                })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status} – ${await res.text()}`);
+            const data = await res.json();
+            addMessage(data.reply || '(empty reply)', 'bot');
+            } catch (err) {
+            console.error(err);
+            addMessage(`Server error: ${err.message || 'load failed'}`, 'bot');
+            } finally {
+            sendButton.disabled = false;
+            userInput.focus();
+            }
+        }
+
+        sendButton.addEventListener('click', handleUserMessage);
+        userInput.addEventListener('keypress', e => e.key === 'Enter' && handleUserMessage());
+        </script>
+    </body>
 </html>
